@@ -1,6 +1,10 @@
 #include <iostream>
+#include "build_daemon.hpp"
+
 
 int main(int argc, const char *argv[]) {
-  std::cout << argv[0] << std::endl;
+  build_daemon daemon;
+
+  return daemon.run(argc, argv);
 }
    
