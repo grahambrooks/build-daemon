@@ -10,11 +10,12 @@ LIBS		= \
 			$(LIB_PATH)/libboost_filesystem-mt.$(LT) 	\
 			$(LIB_PATH)/libboost_system-mt.$(LT) 		\
 			$(LIB_PATH)/libboost_program_options-mt.$(LT)	\
-			$(LIB_PATH)/libboost_regex-mt.$(LT)
+			$(LIB_PATH)/libboost_regex-mt.$(LT)		\
+			$(LIB_PATH)/libboost_thread-mt.$(LT)
 
 TEST_LIBS	= 	$(LIB_PATH)/libboost_unit_test_framework-mt.$(LT)
 
-OBJECTS 	=	
+OBJECTS 	=	$(BUILD)/build_daemon.o
 
 
 TEST_OBJECTS	=	$(BUILD_TEST)/command_line_argument_parser_tests.o	\
@@ -32,7 +33,7 @@ $(BUILD)/build-daemon	:	$(BUILD) $(OBJECTS) $(BUILD)/main.o
 	clang++ -g -O1 -o $@ -std=c++11 -D BUILD_NUMBER='"$(BUILD_NUMBER)"' -Xclang "-stdlib=libc++" -lc++ $(SRC)/*.cpp -I /usr/local/include -framework CoreFoundation -framework CoreServices $(LIBS)
 
 $(BUILD)/build-daemon-test	:	$(OBJECTS) $(TEST_OBJECTS)
-	clang++ $^ -o $@ -std=c++11 -lc++ $(LIBS) $(TEST_LIBS)
+	clang++ $^ -o $@ -std=c++11 -lc++ $(LIBS) $(TEST_LIBS)  -framework CoreFoundation -framework CoreServices
 
 test			:	$(BUILD_TEST) $(BUILD)/build-daemon-test
 	./$(BUILD)/build-daemon-test
