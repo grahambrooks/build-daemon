@@ -29,7 +29,7 @@ $(BUILD_TEST)		:	$(BUILD)
 	-mkdir $@
 
 $(BUILD)/build-daemon	:	$(BUILD) $(OBJECTS) $(BUILD)/main.o
-	clang++ -g -O1 -o $@ -std=c++11 -D BUILD_NUMBER='"$(BUILD_NUMBER)"' -Xclang "-stdlib=libc++" -lc++ $(SRC)/*.cpp -I /usr/local/include $(LIBS)
+	clang++ -g -O1 -o $@ -std=c++11 -D BUILD_NUMBER='"$(BUILD_NUMBER)"' -Xclang "-stdlib=libc++" -lc++ $(SRC)/*.cpp -I /usr/local/include -framework CoreFoundation -framework CoreServices $(LIBS)
 
 $(BUILD)/build-daemon-test	:	$(OBJECTS) $(TEST_OBJECTS)
 	clang++ $^ -o $@ -std=c++11 -lc++ $(LIBS) $(TEST_LIBS)
