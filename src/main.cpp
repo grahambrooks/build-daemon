@@ -3,8 +3,6 @@
 
 
 int main(int argc, char *argv[]) {
-  build_daemon daemon;
-
-  return daemon.run(argc, argv);
+  return build_daemon::run(argc, argv);
 }
    
