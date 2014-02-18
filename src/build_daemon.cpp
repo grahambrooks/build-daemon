@@ -9,6 +9,7 @@
 #include <boost/thread.hpp>
 
 #include "build_daemon.hpp"
+#include <boost/regex.hpp>
 
 void event_cb(ConstFSEventStreamRef streamRef,
               void *ctx,
@@ -17,14 +18,22 @@ void event_cb(ConstFSEventStreamRef streamRef,
               const FSEventStreamEventFlags flags[],
               const FSEventStreamEventId ids[]) {
 
+  boost::regex e(".*/\\..*");
+  
   auto interesting_mask = kFSEventStreamEventFlagItemCreated | kFSEventStreamEventFlagItemRemoved | kFSEventStreamEventFlagItemRenamed | kFSEventStreamEventFlagItemModified;
   
   
   for (int i = 0; i < count; i++) {
     char *path = ((char **) paths)[i];
     if ((flags[i] & interesting_mask) != 0) {
-      build_daemon* daemon = (build_daemon*)ctx;
-      daemon->build();
+      
+      if (boost::regex_match(path, e)) {
+	// std::cout << "Ignorning change for " << path << std::endl;
+      } else {
+	// std::cout << "Acting on change for " << path << std::endl;
+	build_daemon* daemon = (build_daemon*)ctx;
+	daemon->build();
+      }
     }
   }
 }
@@ -50,6 +59,7 @@ std::string build_daemon::make_absolute_path(const char *initial_path) {
       fprintf(stderr, "Error %i in realpath(\"%s\"): %s\n", errno, path, strerror(errno));
       exit(1);
     }
+
     asprintf(&path, "%s/%s", dir_path, file_name);
     free(dir_path);
   }
@@ -61,7 +71,6 @@ std::string build_daemon::make_absolute_path(const char *initial_path) {
 }
 
 int build_daemon::run(int argc, char *argv[]) {
-
   const char* path = argc > 1 ? argv[1] : "."; 
     
   project_builder builder(argc > 2 ? argv[2] : "make");
@@ -110,10 +119,11 @@ int build_daemon::build() {
     boost::thread t([&] {
 	builder.build();
 	std::cout << "Sleeping" << std::endl;
-	//	boost::this_thread::sleep_for(boost::chrono::milliseconds(1000));
 	building = false;
       });
+    
     t.detach();
+
     return 0;
   }
 }
