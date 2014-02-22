@@ -22,13 +22,15 @@ lazybuilder depends on [boost](http://www.boost.org)
 Using Homebrew
 
 
-`brew update             && \
-brew tap grahambrooks/lazybuilder/tmate && \
-brew install lazybuilder`
+	brew update             && \
+	brew tap grahambrooks/lazybuilder/tmate && \
+	brew install lazybuilder
 
 
 From Source
 
-`git clone git@github.com:grahambrooks/lazybuilder.git
-cd lazybuilder
-make install`
+	git clone git@github.com:grahambrooks/lazybuilder.git
+	cd lazybuilder
+	make install
+
+
