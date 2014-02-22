@@ -23,7 +23,7 @@ Using Homebrew
 
 
 	brew update             && \
-	brew tap grahambrooks/lazybuilder/tmate && \
+	brew tap grahambrooks/lazybuilder && \
 	brew install lazybuilder
 
 
