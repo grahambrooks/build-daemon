@@ -15,7 +15,8 @@ LIBS		= \
 
 TEST_LIBS	= 	$(LIB_PATH)/libboost_unit_test_framework-mt.$(LT)
 
-OBJECTS 	=	$(BUILD)/build_daemon.o
+OBJECTS 	=	$(BUILD)/command_line_argument_parser.o	\
+			$(BUILD)/build_daemon.o
 
 
 TEST_OBJECTS	=	$(BUILD_TEST)/command_line_argument_parser_tests.o	\
@@ -59,6 +60,9 @@ build-daemon-install-0.0.$(BUILD_NUMBER).dmg : $(BUILD)/build-daemon dist/README
 
 dist/README.html	:	dist	README.md
 	markdown README.md > dist/README.html
+
+install:	$(BUILD)/build-daemon
+	cp $(BUILD)/build-daemon /usr/local/bin
 
 clean:
 	-rm -rf $(BUILD)/*

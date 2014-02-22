@@ -7,7 +7,7 @@ BOOST_AUTO_TEST_CASE(captures_filenames_from_the_commandline) {
   const char *argv[] = {"app", "a", "b", "c"};
   auto args = parser.parse(sizeof(argv)/sizeof(*argv), argv);
   
-  auto filename_arguments =  args.filenames();
+  auto filename_arguments =  args.parameters();
 
   BOOST_CHECK_EQUAL(3, filename_arguments.size());
   BOOST_CHECK_EQUAL("a", filename_arguments[0]);

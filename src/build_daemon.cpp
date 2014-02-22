@@ -7,9 +7,9 @@
 #include <CoreServices/CoreServices.h>
 #include <iostream>
 #include <boost/thread.hpp>
+#include <boost/regex.hpp>
 
 #include "build_daemon.hpp"
-#include <boost/regex.hpp>
 
 void event_cb(ConstFSEventStreamRef streamRef,
               void *ctx,
@@ -17,7 +17,7 @@ void event_cb(ConstFSEventStreamRef streamRef,
               void *paths,
               const FSEventStreamEventFlags flags[],
               const FSEventStreamEventId ids[]) {
-
+  
   boost::regex e(".*/\\..*");
   
   auto interesting_mask = kFSEventStreamEventFlagItemCreated | kFSEventStreamEventFlagItemRemoved | kFSEventStreamEventFlagItemRenamed | kFSEventStreamEventFlagItemModified;
@@ -71,13 +71,19 @@ std::string build_daemon::make_absolute_path(const char *initial_path) {
 }
 
 int build_daemon::run(int argc, char *argv[]) {
-  const char* path = argc > 1 ? argv[1] : "."; 
+
+  if ((argc > 1) && (strcmp(argv[1], "-v") == 0)) {
+    std::cout << "build-daemon version 0.1" << std::endl;
+    return 0;
+  } else {
+    const char* path = argc > 1 ? argv[1] : "."; 
     
-  project_builder builder(argc > 2 ? argv[2] : "make");
-
-  build_daemon daemon(path, builder);
-
-  return daemon.run();
+    project_builder builder(argc > 2 ? argv[2] : "make");
+    
+    build_daemon daemon(path, builder);
+    
+    return daemon.run();
+  }
 }
 
 build_daemon::build_daemon(const char *path, project_builder& builder) : watched_path(path), builder(builder), building(false) {
