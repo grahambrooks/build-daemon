@@ -73,7 +73,7 @@ std::string build_daemon::make_absolute_path(const char *initial_path) {
 int build_daemon::run(int argc, char *argv[]) {
 
   if ((argc > 1) && (strcmp(argv[1], "-v") == 0)) {
-    std::cout << "build-daemon version 0.1" << std::endl;
+    std::cout << "lazybuild version 0.2" << std::endl;
     return 0;
   } else {
     const char* path = argc > 1 ? argv[1] : "."; 

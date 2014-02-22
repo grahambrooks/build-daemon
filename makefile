@@ -20,7 +20,7 @@ OBJECTS 	=	$(BUILD)/build_daemon.o
 
 TEST_OBJECTS	=	$(BUILD_TEST)/test_main.o
 
-all		:	build/build-daemon test
+all		:	build/lazybuilder test
 
 $(BUILD)	:
 	-mkdir $@
@@ -28,18 +28,18 @@ $(BUILD)	:
 $(BUILD_TEST)		:	$(BUILD)
 	-mkdir $@
 
-$(BUILD)/build-daemon	:	$(BUILD) $(OBJECTS) $(BUILD)/main.o
+$(BUILD)/lazybuilder	:	$(BUILD) $(OBJECTS) $(BUILD)/main.o
 	clang++ -g -O1 -o $@ -std=c++11 -D BUILD_NUMBER='"$(BUILD_NUMBER)"' -Xclang "-stdlib=libc++" -lc++ $(SRC)/*.cpp -I /usr/local/include -framework CoreFoundation -framework CoreServices $(LIBS)
 
-$(BUILD)/build-daemon-test	:	$(OBJECTS) $(TEST_OBJECTS)
+$(BUILD)/lazybuilder-test	:	$(OBJECTS) $(TEST_OBJECTS)
 	clang++ $^ -o $@ -std=c++11 -lc++ $(LIBS) $(TEST_LIBS)  -framework CoreFoundation -framework CoreServices
 
-test			:	$(BUILD_TEST) $(BUILD)/build-daemon-test
-	./$(BUILD)/build-daemon-test
+test			:	$(BUILD_TEST) $(BUILD)/lazybuilder-test
+	./$(BUILD)/lazybuilder-test
 
 ci-test: results.xml
 
-results.xml	: $(BUILD)/build-daemon-test
+results.xml	: $(BUILD)/lazybuilder-test
 	./$^ --log_format=XML --log_sink=results.xml --log_level=all --report_level=no
 
 ci-build:	ci-test dmg
@@ -47,20 +47,20 @@ ci-build:	ci-test dmg
 dist	:
 	-mkdir dist
 
-dmg:	build-daemon-install-0.0.$(BUILD_NUMBER).dmg
+dmg:	lazybuilder-install-0.0.$(BUILD_NUMBER).dmg
 
-build-daemon-install-0.0.$(BUILD_NUMBER).dmg : $(BUILD)/build-daemon dist/README.html
+lazybuilder-install-0.0.$(BUILD_NUMBER).dmg : $(BUILD)/lazybuilder dist/README.html
 	ln -s /usr/local/bin dist/bin
-	cp $(BUILD)/build-daemon dist
-	hdiutil create tmp.dmg -ov -volname "build-daemon - duplicate finder" -fs HFS+ -srcfolder "dist" 
-	hdiutil convert tmp.dmg -format UDZO -o build-daemon-install-0.0.$(BUILD_NUMBER).dmg
+	cp $(BUILD)/lazybuilder dist
+	hdiutil create tmp.dmg -ov -volname "lazybuilder - duplicate finder" -fs HFS+ -srcfolder "dist" 
+	hdiutil convert tmp.dmg -format UDZO -o lazybuilder-install-0.0.$(BUILD_NUMBER).dmg
 	-rm tmp.dmg
 
 dist/README.html	:	dist	README.md
 	markdown README.md > dist/README.html
 
-install:	$(BUILD)/build-daemon
-	cp $(BUILD)/build-daemon /usr/local/bin
+install:	$(BUILD)/lazybuilder
+	cp $(BUILD)/lazybuilder /usr/local/bin
 
 clean:
 	-rm -rf $(BUILD)/*
