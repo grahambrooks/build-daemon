@@ -15,12 +15,10 @@ LIBS		= \
 
 TEST_LIBS	= 	$(LIB_PATH)/libboost_unit_test_framework-mt.$(LT)
 
-OBJECTS 	=	$(BUILD)/command_line_argument_parser.o	\
-			$(BUILD)/build_daemon.o
+OBJECTS 	=	$(BUILD)/build_daemon.o
 
 
-TEST_OBJECTS	=	$(BUILD_TEST)/command_line_argument_parser_tests.o	\
-			$(BUILD_TEST)/test_main.o
+TEST_OBJECTS	=	$(BUILD_TEST)/test_main.o
 
 all		:	build/build-daemon test
 
