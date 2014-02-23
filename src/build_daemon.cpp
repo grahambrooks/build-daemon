@@ -2,12 +2,13 @@
 #include <limits.h>
 #include <stdio.h>
 #include <string.h>
-
 #include <CoreFoundation/CoreFoundation.h>
 #include <CoreServices/CoreServices.h>
 #include <iostream>
 #include <boost/thread.hpp>
 #include <boost/regex.hpp>
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/path.hpp>
 
 #include "build_daemon.hpp"
 
@@ -20,8 +21,11 @@ void event_cb(ConstFSEventStreamRef streamRef,
   
   boost::regex e(".*/\\..*");
   
-  auto interesting_mask = kFSEventStreamEventFlagItemCreated | kFSEventStreamEventFlagItemRemoved | kFSEventStreamEventFlagItemRenamed | kFSEventStreamEventFlagItemModified;
-  
+  auto interesting_mask =
+    kFSEventStreamEventFlagItemCreated |
+    kFSEventStreamEventFlagItemRemoved |
+    kFSEventStreamEventFlagItemRenamed |
+    kFSEventStreamEventFlagItemModified;
   
   for (int i = 0; i < count; i++) {
     char *path = ((char **) paths)[i];
@@ -32,68 +36,72 @@ void event_cb(ConstFSEventStreamRef streamRef,
       } else {
 	// std::cout << "Acting on change for " << path << std::endl;
 	build_daemon* daemon = (build_daemon*)ctx;
-	daemon->build();
+	daemon->build(path);
       }
     }
   }
 }
 
-
-std::string build_daemon::make_absolute_path(const char *initial_path) {
-  char *path = (char*)malloc(PATH_MAX);
-
-  if (realpath(initial_path, path) == NULL) {
-    strcpy(path, initial_path);
-    char *file_name = basename(path);
-    path = dirname(path);
-
-    char *dir_path = NULL;
-
-    if (strcmp(path, ".") == 0) {
-      dir_path = realpath("./", NULL); // realpath(".") returns a useless path like /User
-    } else {
-      dir_path = realpath(path, NULL);
-    }
-
-    if (dir_path == NULL) {
-      fprintf(stderr, "Error %i in realpath(\"%s\"): %s\n", errno, path, strerror(errno));
-      exit(1);
-    }
-
-    asprintf(&path, "%s/%s", dir_path, file_name);
-    free(dir_path);
-  }
-
-  std::string s(path);
-  free(path);
-
-  return s;
-}
-
 int build_daemon::run(int argc, char *argv[]) {
+  const char * path = NULL;
+  const char * cmd = NULL;
 
-  if ((argc > 1) && (strcmp(argv[1], "-v") == 0)) {
-    std::cout << "lazybuild version 0.2" << std::endl;
-    return 0;
-  } else {
-    const char* path = argc > 1 ? argv[1] : "."; 
-    
-    project_builder builder(argc > 2 ? argv[2] : "make");
-    
-    build_daemon daemon(path, builder);
-    
-    return daemon.run();
+
+  for (auto arg = 1; arg < argc; arg++) {
+
+    if (argv[arg][0] == '-') {
+      if (argv[arg][1] == 'v') {
+	std::cout << "lazybuild version 0.3" << std::endl;
+	return 0;
+      }
+    } else {
+      if (path == NULL) {
+	path = argv[arg];
+      } else {
+	cmd = argv[arg];
+      }
+    }
   }
+  
+  if (path == NULL) {
+    path = ".";
+  }
+
+  if (cmd == NULL) {
+    cmd = "make";
+  }
+
+  project_builder builder(cmd);
+  
+  build_daemon daemon(path, builder);
+  
+  return daemon.run();
 }
 
 build_daemon::build_daemon(const char *path, project_builder& builder) : watched_path(path), builder(builder), building(false) {
 }
 
 int build_daemon::run() {
-  std::string path = make_absolute_path(watched_path);
+  boost::filesystem::path canonical_path = boost::filesystem::canonical(watched_path);
 
-  std::cout << "Watching " << path << std::endl;
+  if (boost::filesystem::is_regular_file(canonical_path)) {
+    canonical_path = canonical_path.parent_path();
+  }
 
+  if (!boost::filesystem::is_directory(canonical_path)) {
+    std::cout << "Path " << canonical_path << " does not exist or is not a directory" << std::endl;
+    return -1;
+  }
+
+  std::cout << "Watching " << canonical_path << std::endl;
+
+  start_watching(canonical_path);
+
+
+  return 0;
+}
+
+void build_daemon::start_watching(boost::filesystem::path path) {
   CFMutableArrayRef paths = CFArrayCreateMutable(NULL, 2, NULL);
   auto cfs_path = CFStringCreateWithCString(NULL, path.c_str(), kCFStringEncodingUTF8);
   CFArrayAppendValue(paths, cfs_path);
@@ -113,17 +121,17 @@ int build_daemon::run() {
   FSEventStreamStart(stream);
 
   CFRunLoopRun();
-
-  return 0;
 }
 
-int build_daemon::build() {
+int build_daemon::build(const char * triggering_path) {
   if (building) {
+    // std::cout << "Already running build: " << triggering_path << " change ignored" << std::endl;
     return 0;
   } else {
     building = true;
     boost::thread t([&] {
 	builder.build();
+	boost::this_thread::sleep(boost::posix_time::milliseconds(100));
 	std::cout << "Sleeping" << std::endl;
 	building = false;
       });

@@ -8,6 +8,6 @@ public:
  project_builder(std::string command) : command(command) { }
 
   int build() {
-    return system(command.c_str());
+     return system(command.c_str());
   }
 };

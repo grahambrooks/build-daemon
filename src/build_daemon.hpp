@@ -1,5 +1,7 @@
 #pragma once
 
+#include <boost/filesystem/path.hpp>
+
 #include "project_builder.h"
 
 class build_daemon {
@@ -9,12 +11,12 @@ class build_daemon {
 
   build_daemon(const char *path, project_builder &builder);
 
-  std::string make_absolute_path(const char *initial_path);
+  void start_watching(boost::filesystem::path path);
 
 public:
   static int run(int argc, char *argv[]);
 
   int run();
 
-  int build();
+  int build(const char * triggering_path);
 };
