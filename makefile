@@ -18,7 +18,8 @@ TEST_LIBS	= 	$(LIB_PATH)/libboost_unit_test_framework-mt.$(LT)
 OBJECTS 	=	$(BUILD)/build_daemon.o
 
 
-TEST_OBJECTS	=	$(BUILD_TEST)/test_main.o
+TEST_OBJECTS	=	$(BUILD_TEST)/test_main.o	\
+			$(BUILD_TEST)/hidden_file_filter_test.o
 
 all		:	build/lazybuilder test
 
@@ -28,8 +29,8 @@ $(BUILD)	:
 $(BUILD_TEST)		:	$(BUILD)
 	-mkdir $@
 
-$(BUILD)/lazybuilder	:	$(BUILD) $(OBJECTS) $(BUILD)/main.o
-	clang++ -g -O1 -o $@ -std=c++11 -D BUILD_NUMBER='"$(BUILD_NUMBER)"' -Xclang "-stdlib=libc++" -lc++ $(SRC)/*.cpp -I /usr/local/include -framework CoreFoundation -framework CoreServices $(LIBS)
+$(BUILD)/lazybuilder	:	$(OBJECTS) $(BUILD)/main.o
+	clang++ -g -O1 -o $@ -std=c++11 -D BUILD_NUMBER='"$(BUILD_NUMBER)"' -Xclang "-stdlib=libc++" -lc++ $^ -I /usr/local/include -framework CoreFoundation -framework CoreServices $(LIBS)
 
 $(BUILD)/lazybuilder-test	:	$(OBJECTS) $(TEST_OBJECTS)
 	clang++ $^ -o $@ -std=c++11 -lc++ $(LIBS) $(TEST_LIBS)  -framework CoreFoundation -framework CoreServices
@@ -67,7 +68,6 @@ clean:
 	-rm build-daemen-install*.dmg
 	-rm tmp.dmg
 	-rm -rf dist
-
 
 $(BUILD)/%.o : $(SRC)/%.cpp	$(BUILD)
 	clang++ -g -O1 -std=c++11 -Xclang "-stdlib=libc++" -I $(SRC) -I /usr/local/include -c $< -o $@

@@ -11,6 +11,7 @@
 #include <boost/filesystem/path.hpp>
 
 #include "build_daemon.hpp"
+#include "filters.hpp"
 
 void event_cb(ConstFSEventStreamRef streamRef,
               void *ctx,
@@ -18,26 +19,25 @@ void event_cb(ConstFSEventStreamRef streamRef,
               void *paths,
               const FSEventStreamEventFlags flags[],
               const FSEventStreamEventId ids[]) {
+  build_daemon* daemon = (build_daemon*)ctx;
   
-  boost::regex e(".*/\\..*");
-  
-  auto interesting_mask =
-    kFSEventStreamEventFlagItemCreated |
-    kFSEventStreamEventFlagItemRemoved |
-    kFSEventStreamEventFlagItemRenamed |
-    kFSEventStreamEventFlagItemModified;
-  
+  daemon->callback(streamRef, count, paths, flags, ids);
+}
+
+void build_daemon::callback(ConstFSEventStreamRef streamRef,
+			    size_t count,
+			    void *paths,
+			    const FSEventStreamEventFlags flags[],
+			    const FSEventStreamEventId ids[]) {
+  filters filters;
+
   for (int i = 0; i < count; i++) {
     char *path = ((char **) paths)[i];
-    if ((flags[i] & interesting_mask) != 0) {
-      
-      if (boost::regex_match(path, e)) {
-	// std::cout << "Ignorning change for " << path << std::endl;
-      } else {
-	// std::cout << "Acting on change for " << path << std::endl;
-	build_daemon* daemon = (build_daemon*)ctx;
-	daemon->build(path);
-      }
+    if (filters.should_ignore(path, flags[i])) {
+      // std::cout << "Ignorning change for " << path << std::endl;
+    } else {
+      // std::cout << "Acting on change for " << path << std::endl;
+      build(path);
     }
   }
 }
@@ -45,7 +45,6 @@ void event_cb(ConstFSEventStreamRef streamRef,
 int build_daemon::run(int argc, char *argv[]) {
   const char * path = NULL;
   const char * cmd = NULL;
-
 
   for (auto arg = 1; arg < argc; arg++) {
 
@@ -97,7 +96,6 @@ int build_daemon::run() {
 
   start_watching(canonical_path);
 
-
   return 0;
 }
 
@@ -129,10 +127,13 @@ int build_daemon::build(const char * triggering_path) {
     return 0;
   } else {
     building = true;
+    
+    std::cout << "Build triggered by: " << triggering_path << std::endl;
     boost::thread t([&] {
 	builder.build();
-	boost::this_thread::sleep(boost::posix_time::milliseconds(100));
-	std::cout << "Sleeping" << std::endl;
+	std::cout << "Quiet period ..... ignoring events" << std::flush;
+	boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
+	std::cout << "\x1B[0G\x1B[0KSleeping" << std::endl;
 	building = false;
       });
     

@@ -1,6 +1,8 @@
 #pragma once
 
 #include <boost/filesystem/path.hpp>
+#include <CoreFoundation/CoreFoundation.h>
+#include <CoreServices/CoreServices.h>
 
 #include "project_builder.h"
 
@@ -17,6 +19,12 @@ public:
   static int run(int argc, char *argv[]);
 
   int run();
+
+  void callback(ConstFSEventStreamRef streamRef,
+		size_t count,
+		void *paths,
+		const FSEventStreamEventFlags flags[],
+		const FSEventStreamEventId ids[]);
 
   int build(const char * triggering_path);
 };
