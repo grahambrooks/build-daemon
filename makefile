@@ -3,7 +3,14 @@ TEST_SRC	= test
 BUILD		= build
 BUILD_TEST	= $(BUILD)/test
 BUILD_NUMBER	?= dev
-LIB_PATH = /usr/local/lib
+
+ifndef HOMEBREW_ROOT
+PREFIX?=/usr/local
+else
+PREFIX?=$(HOMEBREW_ROOT)
+endif
+
+LIB_PATH = $(PREFIX)/lib
 LT = a
 
 LIBS		= \
@@ -30,7 +37,7 @@ $(BUILD_TEST)		:	$(BUILD)
 	-mkdir $@
 
 $(BUILD)/lazybuilder	:	$(OBJECTS) $(BUILD)/main.o
-	clang++ -g -O1 -o $@ -std=c++11 -D BUILD_NUMBER='"$(BUILD_NUMBER)"' -Xclang "-stdlib=libc++" -lc++ $^ -I /usr/local/include -framework CoreFoundation -framework CoreServices $(LIBS)
+	clang++ -g -O1 -o $@ -std=c++11 -D BUILD_NUMBER='"$(BUILD_NUMBER)"' -Xclang "-stdlib=libc++" -lc++ $^ -I $(PREFIX)/include -framework CoreFoundation -framework CoreServices $(LIBS)
 
 $(BUILD)/lazybuilder-test	:	$(OBJECTS) $(TEST_OBJECTS)
 	clang++ $^ -o $@ -std=c++11 -lc++ $(LIBS) $(TEST_LIBS)  -framework CoreFoundation -framework CoreServices
@@ -51,7 +58,7 @@ dist	:
 dmg:	lazybuilder-install-0.0.$(BUILD_NUMBER).dmg
 
 lazybuilder-install-0.0.$(BUILD_NUMBER).dmg : $(BUILD)/lazybuilder dist/README.html
-	ln -s /usr/local/bin dist/bin
+	ln -s $(PREFIX)/bin dist/bin
 	cp $(BUILD)/lazybuilder dist
 	hdiutil create tmp.dmg -ov -volname "lazybuilder - duplicate finder" -fs HFS+ -srcfolder "dist" 
 	hdiutil convert tmp.dmg -format UDZO -o lazybuilder-install-0.0.$(BUILD_NUMBER).dmg
@@ -61,7 +68,7 @@ dist/README.html	:	dist	README.md
 	markdown README.md > dist/README.html
 
 install:	$(BUILD)/lazybuilder
-	cp $(BUILD)/lazybuilder /usr/local/bin
+	cp $(BUILD)/lazybuilder $(PREFIX)/bin
 
 clean:
 	-rm -rf $(BUILD)/*
@@ -70,12 +77,12 @@ clean:
 	-rm -rf dist
 
 $(BUILD)/%.o : $(SRC)/%.cpp	$(BUILD)
-	clang++ -g -O1 -std=c++11 -Xclang "-stdlib=libc++" -I $(SRC) -I /usr/local/include -c $< -o $@
+	clang++ -g -O1 -std=c++11 -Xclang "-stdlib=libc++" -I $(SRC) -I $(PREFIX)/include -c $< -o $@
 
 $(BUILD)/%.o : $(SRC)/%.c	$(BUILD)
-	clang -g -O1 -I $(SRC) -I /usr/local/include -c $< -o $@
+	clang -g -O1 -I $(SRC) -I $(PREFIX)/include -c $< -o $@
 
 $(BUILD_TEST)/%.o : $(TEST_SRC)/%.cpp	$(BUILD_TEST)
-	clang++ -g -O1 -std=c++11 -Xclang "-stdlib=libc++" -I $(SRC) -I /usr/local/include -D MAKEFILE_BUILD -c $< -o $@
+	clang++ -g -O1 -std=c++11 -Xclang "-stdlib=libc++" -I $(SRC) -I $(PREFIX)/include -D MAKEFILE_BUILD -c $< -o $@
 
 
