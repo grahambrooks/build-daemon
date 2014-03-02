@@ -78,6 +78,7 @@ int build_daemon::run(int argc, char *argv[]) {
 }
 
 build_daemon::build_daemon(const char *path, project_builder& builder) : watched_path(path), builder(builder), building(false) {
+
 }
 
 int build_daemon::run() {
@@ -128,12 +129,12 @@ int build_daemon::build(const char * triggering_path) {
   } else {
     building = true;
     
-    std::cout << "Build triggered by: " << triggering_path << std::endl;
+    std::cout << "Build triggered by:  \x1b[32;1m" << triggering_path << "\x1b[0m" << std::endl;
     boost::thread t([&] {
 	builder.build();
 	std::cout << "Quiet period ..... ignoring events" << std::flush;
 	boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
-	std::cout << "\x1B[0G\x1B[0KSleeping" << std::endl;
+	std::cout << "\x1B[0G\x1B[0KWaiting for more changes..." << std::endl;
 	building = false;
       });
     

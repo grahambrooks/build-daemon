@@ -12,6 +12,12 @@ public:
     return boost::regex_match(path, e);
   };
 
+  filter emacs_temp_file_filter = [] (const char *path, FSEventStreamEventFlags flags) {
+    boost::regex e(".*/#.*");
+    
+    return boost::regex_match(path, e);
+  };
+
   filter file_action = [] (const char *path, FSEventStreamEventFlags flags) {
     return ((kFSEventStreamEventFlagItemCreated |
 	     kFSEventStreamEventFlagItemRemoved |
@@ -26,7 +32,8 @@ public:
   bool should_ignore(const char* path, FSEventStreamEventFlags flags) {
     return hidden_file_filter(path, flags) ||
       no_symbolic_links(path, flags) ||
-      file_action(path, flags);
+      file_action(path, flags) ||
+      emacs_temp_file_filter(path, flags);
   }
 };
 
