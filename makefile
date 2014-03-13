@@ -1,3 +1,4 @@
+
 SRC		= src
 TEST_SRC	= test
 BUILD		= build
@@ -22,7 +23,8 @@ LIBS		= \
 
 TEST_LIBS	= 	$(LIB_PATH)/libboost_unit_test_framework-mt.$(LT)
 
-OBJECTS 	=	$(BUILD)/build_daemon.o
+OBJECTS 	=	$(BUILD)/build_daemon.o	\
+			$(BUILD)/filters.o
 
 
 TEST_OBJECTS	=	$(BUILD_TEST)/test_main.o	\
@@ -74,7 +76,7 @@ install:	$(BUILD)/lazybuilder
 
 clean:
 	-rm -rf $(BUILD)/*
-	-rm build-daemen-install*.dmg
+	-rm lazybuilder-install*.dmg
 	-rm tmp.dmg
 	-rm -rf dist
 
@@ -86,5 +88,3 @@ $(BUILD)/%.o : $(SRC)/%.c	$(BUILD)
 
 $(BUILD_TEST)/%.o : $(TEST_SRC)/%.cpp	$(BUILD_TEST)
 	clang++ -g -O1 -std=c++11 -Xclang "-stdlib=libc++" -I $(SRC) -I $(PREFIX)/include -D MAKEFILE_BUILD -c $< -o $@
-
-

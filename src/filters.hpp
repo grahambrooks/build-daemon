@@ -1,6 +1,34 @@
+#pragma once
 #include <CoreFoundation/CoreFoundation.h>
 #include <CoreServices/CoreServices.h>
+#include <vector>
 #include <boost/regex.hpp>
+
+using namespace std;
+namespace lazy {
+  namespace filesystem {
+    class event_filter {
+    public:
+      virtual bool should_ignore(const char* path, FSEventStreamEventFlags flags) {
+	return false;
+      }
+    };
+
+    class path_event_filter : public event_filter {
+      boost::regex re;
+    public:
+      path_event_filter(boost::regex re) : re(re) {}
+
+      virtual bool should_ignore(const char* path, FSEventStreamEventFlags flags) {
+	return boost::regex_match(path, re);
+      }
+
+      static vector<event_filter> load(const string& path);
+    };
+  }
+}
+
+
 
 
 class filters {

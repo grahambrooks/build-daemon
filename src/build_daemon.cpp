@@ -5,6 +5,7 @@
 #include <CoreFoundation/CoreFoundation.h>
 #include <CoreServices/CoreServices.h>
 #include <iostream>
+#include <fstream>
 #include <boost/thread.hpp>
 #include <boost/regex.hpp>
 #include <boost/filesystem/operations.hpp>
@@ -12,13 +13,14 @@
 
 #include "build_daemon.hpp"
 #include "filters.hpp"
+#include "ignore_list_reader.hpp"
 
 void event_cb(ConstFSEventStreamRef streamRef,
-              void *ctx,
-              size_t count,
-              void *paths,
-              const FSEventStreamEventFlags flags[],
-              const FSEventStreamEventId ids[]) {
+		void *ctx,
+		size_t count,
+		void *paths,
+		const FSEventStreamEventFlags flags[],
+		const FSEventStreamEventId ids[]) {
   build_daemon* daemon = (build_daemon*)ctx;
   
   daemon->callback(streamRef, count, paths, flags, ids);
@@ -41,6 +43,8 @@ void build_daemon::callback(ConstFSEventStreamRef streamRef,
     }
   }
 }
+
+
 
 int build_daemon::run(int argc, char *argv[]) {
   const char * path = NULL;
@@ -70,6 +74,27 @@ int build_daemon::run(int argc, char *argv[]) {
     cmd = "make";
   }
 
+
+  vector<lazy::filesystem::event_filter> filters;
+  /*
+  filters.insert(filters.end(), filters.standard_filters);
+  filters.insert(filters.end(), filters.load(boost::filesystem::current_path() / ".lazyignore"));
+  filters.insert(filters.end(), filters.load(boost::filesystem::current_path() / ".gitignore"));
+  
+  if (boost::filesystem::exists(gitignore_path) && boost::filesystem::is_regular_file(gitignore_path)) {
+    ignore_list_reader reader;
+    
+    ifstream f;
+    
+    f.open(gitignore_path.string());
+    auto patterns = reader.read(f);
+    f.close();
+    for (auto &x : patterns) {
+      cout << "Pattern " << x << endl;
+    }
+  }
+
+*/
   project_builder builder(cmd);
   
   build_daemon daemon(path, builder);
