@@ -42,17 +42,23 @@ void build_daemon::callback(ConstFSEventStreamRef streamRef,
   }
 }
 
+
+class is {
+public:
+  static bool verbose_option(const char * option) {
+    return option != NULL && option[0] == '-' && option[1] == 'v' && option[3] == 0;	
+  }
+};
+
 int build_daemon::run(int argc, char *argv[]) {
   const char * path = NULL;
   const char * cmd = NULL;
 
   for (auto arg = 1; arg < argc; arg++) {
 
-    if (argv[arg][0] == '-') {
-      if (argv[arg][1] == 'v') {
+    if (is::verbose_option(argv[arg])) {
 	std::cout << "lazybuild version 0.3" << std::endl;
 	return 0;
-      }
     } else {
       if (path == NULL) {
 	path = argv[arg];
@@ -121,6 +127,12 @@ void build_daemon::start_watching(boost::filesystem::path path) {
 
   CFRunLoopRun();
 }
+
+
+class ansii {
+public:
+  std::string green =  "\x1b[32;1m";
+};
 
 int build_daemon::build(const char * triggering_path) {
   if (building) {
