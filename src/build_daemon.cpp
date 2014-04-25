@@ -111,22 +111,27 @@ build_daemon::build_daemon(const char *path, project_builder& builder) : watched
 }
 
 int build_daemon::run() {
-  boost::filesystem::path canonical_path = boost::filesystem::canonical(watched_path);
+  if (boost::filesystem::exists(watched_path)) {
 
-  if (boost::filesystem::is_regular_file(canonical_path)) {
-    canonical_path = canonical_path.parent_path();
-  }
-
-  if (!boost::filesystem::is_directory(canonical_path)) {
-    std::cout << "Path " << canonical_path << " does not exist or is not a directory" << std::endl;
+    boost::filesystem::path canonical_path = boost::filesystem::canonical(watched_path);
+    
+    if (boost::filesystem::is_regular_file(canonical_path)) {
+      canonical_path = canonical_path.parent_path();
+    }
+    
+    if (!boost::filesystem::is_directory(canonical_path)) {
+      std::cout << "Path " << canonical_path << " does not exist or is not a directory" << std::endl;
+      return -1;
+    }
+    
+    std::cout << "Watching " << canonical_path << std::endl;
+    
+    start_watching(canonical_path);
+    return 0;
+  } else {
+    std::cerr << "\x1b[31;1merror\x1b[0m: path '" << watched_path << "' does not exist" << std::endl;
     return -1;
   }
-
-  std::cout << "Watching " << canonical_path << std::endl;
-
-  start_watching(canonical_path);
-
-  return 0;
 }
 
 void build_daemon::start_watching(boost::filesystem::path path) {
