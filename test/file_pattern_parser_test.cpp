@@ -40,8 +40,6 @@ BOOST_AUTO_TEST_CASE(matches_path_elements) {
 
   auto re = file_pattern_parser::parse(text);
 
-  cout << "Regex " << re << endl;
-  
   auto expected = (boost::filesystem::current_path() / "somename").string();
 
   BOOST_CHECK(boost::regex_match(expected, re));

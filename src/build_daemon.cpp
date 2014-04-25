@@ -52,6 +52,27 @@ public:
   }
 };
 
+class ASCII {
+public:
+  static string red(const char* text) {
+    return string("\x1b[31;1m") + text + "\x1b[0m";
+  }
+
+  static string red(const string& text) {
+    return string("\x1b[31;1m") + text + "\x1b[0m";
+  }
+
+  static string green(const char* text) {
+    return string("\x1b[32;1m") + text + "\x1b[0m";
+  }
+
+  static string green(const string& text) {
+    return string("\x1b[32;1m") + text + "\x1b[0m";
+  }
+
+
+};
+
 int build_daemon::run(int argc, char *argv[]) {
   const char * path = NULL;
   const char * cmd = NULL;
@@ -59,7 +80,7 @@ int build_daemon::run(int argc, char *argv[]) {
   for (auto arg = 1; arg < argc; arg++) {
 
     if (is::verbose_option(argv[arg])) {
-	std::cout << "lazybuild version 0.3" << std::endl;
+	std::cout << "lazybuild version 0.4" << std::endl;
 	return 0;
     } else {
       if (path == NULL) {
@@ -120,16 +141,16 @@ int build_daemon::run() {
     }
     
     if (!boost::filesystem::is_directory(canonical_path)) {
-      std::cout << "Path " << canonical_path << " does not exist or is not a directory" << std::endl;
+      std::cout << ASCII::red("error") << " path " << ASCII::red(canonical_path.string()) << " must be a directory" << std::endl;
       return -1;
     }
     
-    std::cout << "Watching " << canonical_path << std::endl;
-    
+    std::cout << "Watching " << ASCII::green(canonical_path.string()) << std::endl;
+    std::cout << "Builder  " << ASCII::green(builder.build_command()) << std::endl;
     start_watching(canonical_path);
     return 0;
   } else {
-    std::cerr << "\x1b[31;1merror\x1b[0m: path '" << watched_path << "' does not exist" << std::endl;
+    std::cerr << ASCII::red("error") << ": path '" << watched_path << "' does not exist" << std::endl;
     return -1;
   }
 }
@@ -157,11 +178,6 @@ void build_daemon::start_watching(boost::filesystem::path path) {
 }
 
 
-class ansii {
-public:
-  std::string green =  "\x1b[32;1m";
-};
-
 int build_daemon::build(const char * triggering_path) {
   if (building) {
     // std::cout << "Already running build: " << triggering_path << " change ignored" << std::endl;
@@ -169,7 +185,7 @@ int build_daemon::build(const char * triggering_path) {
   } else {
     building = true;
     
-    std::cout << "Build triggered by:  \x1b[32;1m" << triggering_path << "\x1b[0m" << std::endl;
+    std::cout << "Build triggered by: " << ASCII::red(triggering_path) << std::endl;
     boost::thread t([&] {
 	builder.build();
 	std::cout << "Quiet period ..... ignoring events" << std::flush;

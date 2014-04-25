@@ -12,4 +12,8 @@ public:
   int build() {
     return system(command.c_str());
   }
+
+  const std::string& build_command() {
+    return command;
+  }
 };
