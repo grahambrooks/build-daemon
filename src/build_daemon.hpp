@@ -7,11 +7,12 @@
 #include "project_builder.h"
 
 class build_daemon {
-  project_builder &builder;
+  project_builder builder;
+  const char* user_cmd;
   const char *watched_path;
   bool building;
 
-  build_daemon(const char *path, project_builder &builder);
+  build_daemon(const char *path, const char* user_cmd);
 
   void start_watching(boost::filesystem::path path);
 

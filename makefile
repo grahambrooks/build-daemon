@@ -31,6 +31,7 @@ TEST_OBJECTS	=	$(BUILD_TEST)/test_main.o	\
 			$(BUILD_TEST)/hidden_file_filter_test.o	\
 			$(BUILD_TEST)/ignore_reader_tests.o	\
 			$(BUILD_TEST)/command_line_tests.o	\
+			$(BUILD_TEST)/build_tool_selector_tests.o	\
 			$(BUILD_TEST)/file_pattern_parser_test.o
 
 all		:	build/lazybuilder test
@@ -42,7 +43,7 @@ $(BUILD_TEST)		:	$(BUILD)
 	-mkdir $@
 
 $(BUILD)/lazybuilder	:	$(OBJECTS) $(BUILD)/main.o
-	clang++ -g -O1 -o $@ -std=c++11 -D BUILD_NUMBER='"$(BUILD_NUMBER)"' -Xclang "-stdlib=libc++" -lc++ $^ -I $(PREFIX)/include -framework CoreFoundation -framework CoreServices $(LIBS)
+	clang++ -g -O1 -o $@ -std=c++11 -D BUILD_NUMBER='"$(BUILD_NUMBER)"' -lc++ $^ -I $(PREFIX)/include -framework CoreFoundation -framework CoreServices $(LIBS)
 
 $(BUILD)/lazybuilder-test	:	$(OBJECTS) $(TEST_OBJECTS)
 	clang++ $^ -o $@ -std=c++11 -lc++ $(LIBS) $(TEST_LIBS)  -framework CoreFoundation -framework CoreServices
@@ -82,10 +83,10 @@ clean:
 	-rm -rf dist
 
 $(BUILD)/%.o : $(SRC)/%.cpp	$(BUILD)
-	clang++ -g -O1 -std=c++11 -Xclang "-stdlib=libc++" -I $(SRC) -I $(PREFIX)/include -c $< -o $@
+	clang++ -g -O1 -std=c++11 -I $(SRC) -I $(PREFIX)/include -c $< -o $@
 
 $(BUILD)/%.o : $(SRC)/%.c	$(BUILD)
 	clang -g -O1 -I $(SRC) -I $(PREFIX)/include -c $< -o $@
 
 $(BUILD_TEST)/%.o : $(TEST_SRC)/%.cpp	$(BUILD_TEST)
-	clang++ -g -O1 -std=c++11 -Xclang "-stdlib=libc++" -I $(SRC) -I $(PREFIX)/include -D MAKEFILE_BUILD -c $< -o $@
+	clang++ -g -O1 -std=c++11 -I $(SRC) -I $(PREFIX)/include -D MAKEFILE_BUILD -c $< -o $@
