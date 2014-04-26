@@ -30,6 +30,7 @@ OBJECTS 	=	$(BUILD)/build_daemon.o	\
 TEST_OBJECTS	=	$(BUILD_TEST)/test_main.o	\
 			$(BUILD_TEST)/hidden_file_filter_test.o	\
 			$(BUILD_TEST)/ignore_reader_tests.o	\
+			$(BUILD_TEST)/command_line_tests.o	\
 			$(BUILD_TEST)/file_pattern_parser_test.o
 
 all		:	build/lazybuilder test

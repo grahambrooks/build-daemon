@@ -14,6 +14,8 @@
 #include "build_daemon.hpp"
 #include "filters.hpp"
 #include "ignore_list_reader.hpp"
+#include "ascii.hpp"
+#include "command_line.hpp"
 
 void event_cb(ConstFSEventStreamRef streamRef,
 		void *ctx,
@@ -44,44 +46,14 @@ void build_daemon::callback(ConstFSEventStreamRef streamRef,
   }
 }
 
-
-class is {
-public:
-  static bool verbose_option(const char * option) {
-    return option != NULL && option[0] == '-' && option[1] == 'v' && option[3] == 0;	
-  }
-};
-
-class ASCII {
-public:
-  static string red(const char* text) {
-    return string("\x1b[31;1m") + text + "\x1b[0m";
-  }
-
-  static string red(const string& text) {
-    return string("\x1b[31;1m") + text + "\x1b[0m";
-  }
-
-  static string green(const char* text) {
-    return string("\x1b[32;1m") + text + "\x1b[0m";
-  }
-
-  static string green(const string& text) {
-    return string("\x1b[32;1m") + text + "\x1b[0m";
-  }
-
-
-};
-
 int build_daemon::run(int argc, char *argv[]) {
   const char * path = NULL;
   const char * cmd = NULL;
 
   for (auto arg = 1; arg < argc; arg++) {
-
     if (is::verbose_option(argv[arg])) {
-	std::cout << "lazybuild version 0.4" << std::endl;
-	return 0;
+      std::cout << "lazybuild version 0.4" << std::endl;
+      return 0;
     } else {
       if (path == NULL) {
 	path = argv[arg];
