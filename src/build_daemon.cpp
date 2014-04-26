@@ -57,7 +57,7 @@ int build_daemon::run(int argc, char *argv[]) {
 
   for (auto arg = 1; arg < argc; arg++) {
     if (is::verbose_option(argv[arg])) {
-      std::cout << "lazybuild version 0.4" << std::endl;
+      std::cout << "lazybuild version 0.6" << std::endl;
       return 0;
     } else {
       if (path == NULL) {
