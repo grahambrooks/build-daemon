@@ -1,7 +1,7 @@
-
 #include <string>
 #include <vector>
 #include <sys/syslimits.h>
+
 using namespace std;
 
 class ignore_list_reader {
@@ -13,7 +13,7 @@ public:
 
     while (ss.getline(pattern, 1025)) {
       if (strlen(pattern) > 0 && pattern[0] != '#') {
-	result.push_back(pattern);
+        result.push_back(pattern);
       }
     }
     return result;
